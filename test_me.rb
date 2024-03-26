@@ -19,16 +19,24 @@ class TestMe
 
         GC.start
         GC.compact
-        
-        raise "#{num}: Object was not finalized" if !@finalized
-    rescue => err
-        puts err
+
+        if @finalized
+            puts log("Object finalized")
+        else
+            STDERR.puts "\e[31m#{log("Object NOT finalized")}\e[0m"
+        end
     end
 
     def create_finalizer_func(test_instance)
         -> (_object_id) do
-          puts "#{test_instance.num}: Finalizing"
+          puts test_instance.log("Finalizing")
           test_instance.finalized = true
         end
+    end
+
+    def log(message)
+        time = Time.now.strftime("%Y-%m-%d_%H.%M.%S.%N")
+
+        "[#{time}, #{num}, #{Thread.current.object_id}, #{Fiber.current.object_id}] #{message}"
     end
 end
